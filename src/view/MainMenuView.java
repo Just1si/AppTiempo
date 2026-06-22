@@ -46,8 +46,8 @@ public class MainMenuView {
         });
         
         startButton.setOnAction(e -> {
-            WeatherView weatherView = new WeatherView();
-            stage.setScene(weatherView.getScene(stage));
+        	CitySelectionView cityView = new CitySelectionView();
+        	stage.setScene(cityView.getScene(stage));
         });
 
      // Animación de rebote al hacer clic

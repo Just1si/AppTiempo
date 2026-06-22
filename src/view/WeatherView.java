@@ -1,11 +1,11 @@
 package view;
 
+import controllers.MainMenuController;
 import controllers.WeatherController;
 import interfazLlamadaTiempo.LlamadaTiempo;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -17,111 +17,106 @@ import utils.WeatherAnimations;
 import utils.WeatherBackgroundMapper;
 import utils.WeatherIconMapper;
 
-public class WeatherView implements LlamadaTiempo{
+import java.util.List;
 
-    private final WeatherController controller = new WeatherController();
+public class WeatherView implements LlamadaTiempo {
 
-    private Label temperatureLabel;
-    private Label descriptionLabel;
-    private ImageView weatherIcon;
-    private Button backButton;
-    private StackPane rootReference;
+	private final WeatherController controller = new WeatherController();
 
-    public Scene getScene(Stage stage) {
+	private final String currentCity;
+	private final List<String> allCities;
 
-        // Etiquetas
-        temperatureLabel = new Label("Cargando...");
-        temperatureLabel.getStyleClass().add("temperature");
+	private Label cityLabel;
+	private Label temperatureLabel;
+	private Label descriptionLabel;
+	private ImageView weatherIcon;
+	private StackPane rootReference;
 
-        descriptionLabel = new Label("Obteniendo datos...");
-        descriptionLabel.getStyleClass().add("description");
+	public WeatherView(String city, List<String> allCities) {
+		this.currentCity = city;
+		this.allCities = allCities;
+	}
 
-        // Icono
-        weatherIcon = new ImageView(new Image(
-                getClass().getResource("/icons/sunnyWeather.png").toExternalForm()));
-        weatherIcon.setFitWidth(120);
-        weatherIcon.setPreserveRatio(true);
+	public Scene getScene(Stage stage) {
 
-        // Animaciones externas
-        WeatherAnimations.applyBounce(weatherIcon);
-        WeatherAnimations.applyPulse(weatherIcon);
+		cityLabel = new Label(currentCity);
+		cityLabel.getStyleClass().add("city-title");
 
-        // Botón volver
-        backButton = new Button("Volver");
-        backButton.getStyleClass().add("back-button");
-        backButton.setOnAction(e -> {
-            MainMenuView menu = new MainMenuView();
-            stage.setScene(menu.getScene(stage));
-        });
+		temperatureLabel = new Label("Cargando...");
+		temperatureLabel.getStyleClass().add("temperature");
 
-        // Contenedor principal
-        VBox content = new VBox();
-        content.setAlignment(Pos.CENTER);
-        content.setSpacing(20);
+		descriptionLabel = new Label("Obteniendo datos...");
+		descriptionLabel.getStyleClass().add("description");
 
-        StackPane root = new StackPane(content);
-        this.rootReference = root;
-        root.getStyleClass().add("weather-background");
+		weatherIcon = new ImageView(new Image(getClass().getResource("/icons/sunnyWeather.png").toExternalForm()));
+		weatherIcon.setFitWidth(120);
+		weatherIcon.setPreserveRatio(true);
 
-        // Selector de ciudad
-        ComboBox<String> citySelector = new ComboBox<>();
-        citySelector.getItems().addAll("Málaga", "Madrid", "Barcelona", "Londres", "Nueva York");
-        citySelector.setValue("Málaga");
-        citySelector.getStyleClass().add("city-selector");
+		WeatherAnimations.applyBounce(weatherIcon);
+		WeatherAnimations.applyPulse(weatherIcon);
 
-        citySelector.setOnAction(e -> {
-            String city = citySelector.getValue();
-            loadWeather(city, root);
-        });
+		Button backButton = new Button("Volver");
+		backButton.getStyleClass().add("back-button");
+		
+		backButton.setOnAction(e -> {
+			WeatherDashboardView dashboard = new WeatherDashboardView(allCities);
+			stage.setScene(dashboard.getScene(stage));
+		});
 
-        // Añadir nodos
-        content.getChildren().addAll(citySelector, weatherIcon, temperatureLabel, descriptionLabel, backButton);
+		Button resetButton = new Button("Reiniciar");
+		resetButton.getStyleClass().add("reset-button");
 
-        // Animación de entrada
-        WeatherAnimations.applyIntro(root);
+		resetButton.setOnAction(e -> {
+			MainMenuController controller = new MainMenuController();
+			controller.show(stage);
+		});
 
-        // Cargar clima inicial
-        loadWeather("Málaga", root);
+		VBox content = new VBox(cityLabel, weatherIcon, temperatureLabel, descriptionLabel, backButton, resetButton);
+		content.setAlignment(Pos.CENTER);
+		content.setSpacing(20);
 
-        Scene scene = new Scene(root, 800, 600);
-        scene.getStylesheets().add(getClass().getResource("/styles/weather.css").toExternalForm());
+		StackPane root = new StackPane(content);
+		this.rootReference = root;
+		root.getStyleClass().add("weather-background");
 
-        return scene;
-    }
+		WeatherAnimations.applyIntro(root);
 
-    private void loadWeather(String city, StackPane root) {
+		loadWeather(currentCity);
 
-        temperatureLabel.setText("Cargando...");
-        descriptionLabel.setText("Obteniendo datos...");
+		Scene scene = new Scene(root, 800, 600);
+		scene.getStylesheets().add(getClass().getResource("/styles/weather.css").toExternalForm());
 
-        controller.loadWeather(city, this);
-    }
-    
-            @Override
-            public void onSuccess(WeatherData data) {
-                temperatureLabel.setText((int) data.getTemperature() + "°C");
-                descriptionLabel.setText(data.getDescription());
-                applyDynamicBackground(rootReference, data.getDescription());
-                updateWeatherIcon(data.getIcon());
-            }
+		return scene;
+	}
 
-            @Override
-            public void onError() {
-                temperatureLabel.setText("Error");
-                descriptionLabel.setText("No se pudo cargar el clima");
-            }
+	protected void loadWeather(String city) {
+		temperatureLabel.setText("Cargando...");
+		descriptionLabel.setText("Obteniendo datos...");
+		controller.loadWeather(city, this);
+	}
 
-    private void applyDynamicBackground(StackPane root, String weather) {
-        String imageName = WeatherBackgroundMapper.getBackground(weather);
-        root.setStyle("-fx-background-image: url('/backgrounds/" + imageName + "');"
-                + "-fx-background-size: cover;"
-                + "-fx-background-position: center;");
-    }
+	@Override
+	public void onSuccess(WeatherData data) {
+		temperatureLabel.setText((int) data.getTemperature() + "°C");
+		descriptionLabel.setText(data.getDescription());
+		applyDynamicBackground(rootReference, data.getDescription());
+		updateWeatherIcon(data.getIcon());
+	}
 
-    private void updateWeatherIcon(String iconCode) {
-        String file = WeatherIconMapper.getIconFile(iconCode);
-        weatherIcon.setImage(new Image(
-                getClass().getResource("/icons/" + file).toExternalForm()));
-    }
+	@Override
+	public void onError() {
+		temperatureLabel.setText("Error");
+		descriptionLabel.setText("No se pudo cargar el clima");
+	}
 
+	private void applyDynamicBackground(StackPane root, String weather) {
+		String imageName = WeatherBackgroundMapper.getBackground(weather);
+		root.setStyle("-fx-background-image: url('/backgrounds/" + imageName + "');" + "-fx-background-size: cover;"
+				+ "-fx-background-position: center;");
+	}
+
+	private void updateWeatherIcon(String iconCode) {
+		String file = WeatherIconMapper.getIconFile(iconCode);
+		weatherIcon.setImage(new Image(getClass().getResource("/icons/" + file).toExternalForm()));
+	}
 }

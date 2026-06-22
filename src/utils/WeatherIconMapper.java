@@ -16,7 +16,18 @@ public class WeatherIconMapper {
         "50", "variableWeather.png"
     );
 
-    // Método público para obtener el icono correcto
+    private static final Map<String, String> EMOJI_MAP = Map.of(
+        "01", "☀️",
+        "02", "⛅",
+        "03", "☁️",
+        "04", "☁️",
+        "09", "🌧️",
+        "10", "🌦️",
+        "11", "⛈️",
+        "13", "❄️",
+        "50", "🌫️"
+    );
+
     public static String getIconFile(String iconCode) {
 
         if (iconCode == null || iconCode.length() < 2)
@@ -25,5 +36,15 @@ public class WeatherIconMapper {
         String key = iconCode.substring(0, 2);
 
         return ICON_MAP.getOrDefault(key, "sunnyWeather.png");
+    }
+
+    public static String getEmojiForIcon(String iconCode) {
+
+        if (iconCode == null || iconCode.length() < 2)
+            return "❓";
+
+        String key = iconCode.substring(0, 2);
+
+        return EMOJI_MAP.getOrDefault(key, "❓");
     }
 }

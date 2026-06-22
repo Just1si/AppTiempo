@@ -1,11 +1,13 @@
 package controllers;
 
 import javafx.animation.FadeTransition;
+
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import view.CitySelectionView;
 import view.MainMenuView;
-import view.WeatherView;
+
 
 public class MainMenuController {
 
@@ -24,8 +26,8 @@ public class MainMenuController {
 
 			fadeOut.setOnFinished(ev -> {
 
-				WeatherView weatherView = new WeatherView();
-				Scene mainScene = weatherView.getScene(stage);
+				CitySelectionView cityView = new CitySelectionView();
+				Scene mainScene = cityView.getScene(stage);
 				stage.setScene(mainScene);
 				stage.show();
 
