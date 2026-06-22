@@ -1,6 +1,7 @@
 package view;
 
 import controllers.WeatherController;
+import interfazLlamadaTiempo.LlamadaTiempo;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -16,7 +17,7 @@ import utils.WeatherAnimations;
 import utils.WeatherBackgroundMapper;
 import utils.WeatherIconMapper;
 
-public class WeatherView {
+public class WeatherView implements LlamadaTiempo{
 
     private final WeatherController controller = new WeatherController();
 
@@ -24,6 +25,7 @@ public class WeatherView {
     private Label descriptionLabel;
     private ImageView weatherIcon;
     private Button backButton;
+    private StackPane rootReference;
 
     public Scene getScene(Stage stage) {
 
@@ -58,6 +60,7 @@ public class WeatherView {
         content.setSpacing(20);
 
         StackPane root = new StackPane(content);
+        this.rootReference = root;
         root.getStyleClass().add("weather-background");
 
         // Selector de ciudad
@@ -91,13 +94,14 @@ public class WeatherView {
         temperatureLabel.setText("Cargando...");
         descriptionLabel.setText("Obteniendo datos...");
 
-        controller.loadWeather(city, new WeatherController.WeatherCallback() {
-
+        controller.loadWeather(city, this);
+    }
+    
             @Override
             public void onSuccess(WeatherData data) {
                 temperatureLabel.setText((int) data.getTemperature() + "°C");
                 descriptionLabel.setText(data.getDescription());
-                applyDynamicBackground(root, data.getDescription());
+                applyDynamicBackground(rootReference, data.getDescription());
                 updateWeatherIcon(data.getIcon());
             }
 
@@ -106,8 +110,6 @@ public class WeatherView {
                 temperatureLabel.setText("Error");
                 descriptionLabel.setText("No se pudo cargar el clima");
             }
-        });
-    }
 
     private void applyDynamicBackground(StackPane root, String weather) {
         String imageName = WeatherBackgroundMapper.getBackground(weather);
@@ -121,4 +123,5 @@ public class WeatherView {
         weatherIcon.setImage(new Image(
                 getClass().getResource("/icons/" + file).toExternalForm()));
     }
+
 }

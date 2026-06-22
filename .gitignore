@@ -1,1 +1,14 @@
+# Eclipse
+/.classpath
+/.project
+/.settings/
+
+# Compiled output
 /bin/
+
+# API keys
+/resources/config.properties
+
+# OS files
+.DS_Store
+Thumbs.db

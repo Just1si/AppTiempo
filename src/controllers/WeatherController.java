@@ -1,14 +1,15 @@
 package controllers;
 
+import interfazLlamadaTiempo.LlamadaTiempo;
 import javafx.application.Platform;
 import models.WeatherData;
 import services.WeatherService;
 
-public class WeatherController {
+public class WeatherController implements LlamadaTiempo {
 
     private final WeatherService service = new WeatherService();
 
-    public void loadWeather(String city, WeatherCallback callback) {
+    public void loadWeather(String city, LlamadaTiempo callback) {
 
         new Thread(() -> {
             try {
@@ -23,8 +24,17 @@ public class WeatherController {
         }).start();
     }
 
-    public interface WeatherCallback {
-        void onSuccess(WeatherData data);
-        void onError();
-    }
+	@Override
+	public void onSuccess(WeatherData data) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onError() {
+		// TODO Auto-generated method stub
+		
+	}
+
+  
 }
